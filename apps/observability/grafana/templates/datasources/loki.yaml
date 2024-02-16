@@ -1,0 +1,11 @@
+apiVersion: integreatly.org/v1alpha1
+kind: GrafanaDataSource
+metadata:
+  name: loki-grafanadatasource
+spec:
+  name: loki-grafanadatasource.yaml
+  datasources:
+    - name: Loki
+      type: loki
+      access: proxy
+      url: {{ .Values.lokiDatasource.url }}

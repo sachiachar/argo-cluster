@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: prometheus-repository
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: repository
+stringData:
+  name: prometheus
+  url: https://prometheus-community.github.io/helm-charts
+  type: helm
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ingress-nginx-repository
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: repository
+stringData:
+  name: ingress-nginx
+  url: https://kubernetes.github.io/ingress-nginx
+  type: helm
+
+
+
+
+  

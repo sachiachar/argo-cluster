@@ -1,0 +1,15 @@
+grafana-operator:
+  operator:
+    prometheus:
+      serviceMonitor:
+        enabled: true
+    scanAllNamespaces: true
+  grafana: 
+    enabled: false
+grafana:
+  hostname: grafana.platform.example.com
+  adminPassword: JZDQFRWFJktu
+thanosDatasource:
+  url: http://thanos.platform.example.com
+lokiDatasource:
+  url: http://loki.platform.example.com

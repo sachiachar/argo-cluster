@@ -1,0 +1,118 @@
+kube-prometheus-stack:
+  defaultRules:
+    disabled:
+      InfoInhibitor: true
+      KubeCPUOvercommit: true
+      KubeMemoryOvercommit: true
+  grafana:
+    enabled: false
+  prometheus:
+    prometheusSpec:
+      podMetadata:
+        annotations:
+          linkerd.io/inject: enabled 
+      replicas: 2
+      scrapeInterval: 15s
+      serviceMonitorNamespaceSelector: {} #match all namespaces
+      serviceMonitorSelector: {} #match all servicemonitors
+      serviceMonitorSelectorNilUsesHelmValues: false
+
+      podMonitorNamespaceSelector: {} #match all podmonitor namespaces
+      podMonitorSelector: {} #match all podmonitors
+      podMonitorSelectorNilUsesHelmValues: false
+
+      retention: 1d
+
+      ruleNamespaceSelector: {}
+      ruleSelector:
+        matchExpressions:
+          - key: role
+            operator: NotIn
+            values:
+              - global-alert
+      ruleSelectorNilUsesHelmValues: false
+      resources:
+        limits:
+          memory: 4Gi
+        requests:
+          cpu: 250m
+          memory: 4Gi
+      storageSpec: 
+        volumeClaimTemplate:
+          spec:
+            storageClassName: linode-block-storage
+            resources:
+              requests:
+                storage: 10Gi
+
+      thanos:
+        baseImage: quay.io/thanos/thanos
+        version: v0.29.0
+        objectStorageConfig:
+          key: objstore.yaml
+          name: metrics-bucket
+  kubeProxy:
+    #LKE's kube-proxy configmap does not bind the metrics port
+    enabled: false
+  kubeControllerManager:
+    enabled: false
+  kubeScheduler:
+    enabled: false
+  alertmanager:
+    alertmanagerSpec:
+      logLevel: debug
+      podMetadata:
+        annotations:
+          linkerd.io/inject: enabled
+      secrets:
+        - ams-push
+    config:
+      route:
+        group_by:
+        - namespace
+        continue: false
+        routes:
+        - receiver: 'null'
+          matchers:
+          - alertname=~"InfoInhibitor|Watchdog"
+          continue: false
+        - receiver: 'ams-push'
+          continue: true
+        - receiver: 'null'
+          matchers:
+          - severity=~"none|info"
+          continue: false
+        - receiver: 'webex'
+          continue: true
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 12h
+      receivers:
+        - name: 'null'
+                  
+  thanosRuler:
+    enabled: false
+    thanosRulerSpec:
+      podMetadata: 
+        annotations:
+          linkerd.io/inject: enabled
+      queryEndpoints:
+        - dnssrv+_http._tcp.thanos-root-observer-query.monitoring.svc.cluster.local
+      ruleNamespaceSelector: {}
+      ruleSelector:
+        matchLabels:
+          role: global-alert
+      ruleSelectorNilUsesHelmValues: false
+      alertmanagersConfig:
+          key: alertmanager-configs.yaml
+          name: monitoring-thanosruler-am-confg
+
+    extraSecret:
+      name: "monitoring-thanosruler-am-confg"
+      data: 
+        alertmanager-configs.yaml: |
+          alertmanagers:
+          - static_configs: ["alertmanager-operated:9093"]
+            scheme: http
+            timeout: 30s
+            api_version: v2

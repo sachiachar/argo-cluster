@@ -1,0 +1,19 @@
+token = "00112233bccdd..ff"
+argo_admin_password = "password for argo here"
+
+bootstrap_repo_private_key = <<KEY
+-----BEGIN OPENSSH PRIVATE KEY-----
+5mDW1aSAABG5vbmUAAAAEbmaS5j29uZQAAAAAaS5j2AAA
+...
+...
+...
+blfgtH5mDW1aS5j2gtb20BAg2gt==
+-----END OPENSSH PRIVATE KEY-----
+KEY
+
+
+akamai_client_secret = "XXXXXXXXXXXXXXXXXXX"
+akamai_host = "akab-XXXXXXXXXXXXXXXX.luna.akamaiapis.net"
+akamai_access_token = "akab-XXXXXXXXXXXXX-XXXXXXXXXXXXXXX"
+akamai_client_token = "akab-XXXXXXXXXXXXX-XXXXXXXXXXXXXXX"
+

@@ -1,0 +1,81 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: ingress-nginx
+  namespace: {{ .Values.argocdNamespace }}
+spec:
+  generators:
+  - clusters: {} 
+  template:
+    metadata:
+      name: '{{`{{name}}-ingress-nginx`}}'
+      namespace: {{ .Values.argocdNamespace }}
+      finalizers:
+      - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: {{ .Values.projectName }}
+      destination:
+        namespace: ingress-nginx
+        server: '{{`{{server}}`}}'
+      source:
+        repoURL: 'https://kubernetes.github.io/ingress-nginx'
+        targetRevision: 4.4.0
+        helm:
+          releaseName: ingress-nginx
+          values: |
+            controller:
+              autoscaling:
+                enabled: true
+                minReplicas: 3
+                maxReplicas: 5
+                targetCPUUtilizationPercentage: 50
+              resources:
+                requests:
+                  cpu: 200m
+                  memory: 1Gi
+              config:
+                #use-proxy-protocol: true
+                keep-alive: "301"
+                keep-alive-requests: "2000"
+                use-forwarded-headers: "true"
+                compute-full-forwarded-for: "true"
+                enable-real-ip: "true"
+                proxy-real-ip-cidr: "192.168.255.0/24"
+                load-balance: ewma
+              proxySetHeaders:
+                X-Real-Port: "$remote_port"
+                X-NGINX-Start: "${msec}"
+              addHeaders:
+                X-NGINX-Stop: "${msec}"
+              watchIngressWithoutClass: true
+              ingressClassResource:
+                default: true
+              service:
+                externalTrafficPolicy: Cluster
+                #annotations:
+                #  service.beta.kubernetes.io/linode-loadbalancer-default-proxy-protocol: v2
+              topologySpreadConstraints:
+                - maxSkew: 1
+                  topologyKey: kubernetes.io/hostname
+                  whenUnsatisfiable: DoNotSchedule
+                  labelSelector:
+                    matchLabels:
+                      app.kubernetes.io/name: ingress-nginx
+                      app.kubernetes.io/instance: ingress-nginx
+                      app.kubernetes.io/component: controller
+              metrics:
+                enabled: true
+                serviceMonitor:
+                  enabled: true
+        chart: ingress-nginx
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+      ignoreDifferences:
+        - group: autoscaling
+          kind: HorizontalPodAutoscaler
+          jsonPointers:
+            - /spec/metrics

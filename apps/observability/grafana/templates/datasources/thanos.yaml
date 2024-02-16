@@ -1,0 +1,19 @@
+apiVersion: integreatly.org/v1alpha1
+kind: GrafanaDataSource
+metadata:
+  name: thanos-grafanadatasource
+spec:
+  name: thanos-grafanadatasource.yaml
+  datasources:
+    - name: Prometheus
+      type: prometheus
+      access: proxy
+      basicAuth: true
+      basicAuthUser: query
+      secureJsonData:
+        basicAuthPassword: sQYJU69l17yo
+      url: {{ .Values.thanosDatasource.url }}
+      isDefault: true
+      version: 1
+      jsonData:
+        timeInterval: "15s"

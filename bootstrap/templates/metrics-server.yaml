@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: metrics-server
+  namespace: {{ .Values.argocdNamespace }}
+spec:
+  generators:
+  - clusters: {} 
+  template:
+    metadata:
+      name: '{{`{{name}}-metrics-server`}}'
+      namespace: {{ .Values.argocdNamespace }}
+      finalizers:
+      - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: {{ .Values.projectName }}
+      destination:
+        namespace: metrics-server
+        server: '{{`{{server}}`}}'
+      source:
+        path: apps/metrics-server
+        repoURL: {{ .Values.repoURL }}
+        targetRevision: HEAD
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

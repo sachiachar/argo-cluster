@@ -1,0 +1,16 @@
+        apiVersion: argoproj.io/v1alpha1
+        kind: Application
+        metadata:
+          name: platform-application
+          namespace: argocd
+        spec:
+          project: default
+          source:
+            repoURL: git@github.com:akamai-consulting/tiktok-obs-platform.git
+            targetRevision: HEAD
+            path: bootstrap
+          destination:
+            server: https://kubernetes.default.svc
+            namespace: default
+          syncPolicy:
+            automated: {} 

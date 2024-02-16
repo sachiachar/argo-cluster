@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argo-cd
+  namespace: {{ .Values.argocdNamespace }}
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.projectName }}
+  destination:
+    namespace: {{ .Values.argocdNamespace }}
+    server: {{ .Values.spec.destination.server }}
+  source:
+    path: apps/argo-cd
+    repoURL: {{ .Values.repoURL }}
+    targetRevision: HEAD
+    helm:
+      releaseName: argocd
+      values: |
+        argocd:
+          server:
+            ingress:
+              hosts: 
+              - argo.{{ .Values.platformToolsBaseHostname }}
+              tls:
+              - secretName: argocd-secret
+                hosts:
+                - argo.{{ .Values.platformToolsBaseHostname }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

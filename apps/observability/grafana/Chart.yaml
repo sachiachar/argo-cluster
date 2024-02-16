@@ -1,0 +1,10 @@
+apiVersion: v2
+version: 1.0.0
+appVersion: 1.0.0
+type: application
+description: A Helm chart for configuration of Grafana.
+name: "grafana"
+dependencies:
+  - name: grafana-operator
+    version: "2.7.11"
+    repository: https://charts.bitnami.com/bitnami

@@ -1,0 +1,13 @@
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+repoURL: git@github.com:akamai-consulting/tiktok-obs-platform.git
+namespace: default
+argocdNamespace: argocd
+projectName: default
+
+platformToolsBaseHostname: sasriya.net
+certManager:
+  acmeEmail: sachi.achar@gmail.com
+externalDns:
+  domainFilter: sasriya.net

@@ -1,0 +1,24 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: platform-prometheus-rules
+spec:
+  groups:
+  - name: resources
+    rules:
+    - alert: ResourcesLowMemoryCluster
+      expr: (100 * (sum(:node_memory_MemAvailable_bytes:sum) / sum(node_memory_MemTotal_bytes{job="node-exporter"}))) < 20
+      labels:
+        severity: warning
+      annotations:
+        summary: Cluster has less than 20% memory available
+        description: >-
+          Available cluster memory is  {{`{{ $value }}`}}%
+    - alert: ResourcesLowMemoryNode
+      expr: 100 * (sum(node_namespace_pod_container:container_memory_working_set_bytes{container!=""}) by (node) / sum(kube_node_status_capacity{resource="memory"}) by (node)) > 90
+      labels:
+        severity: warning
+      annotations:
+        summary: Node has over 90% of memory used
+        description: >-
+          Memory usage is {{`{{ $value }}`}}% on node {{`{{ $labels.node }}`}}
