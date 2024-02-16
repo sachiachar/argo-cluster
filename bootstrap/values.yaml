@@ -1,7 +1,7 @@
 spec:
   destination:
     server: https://kubernetes.default.svc
-repoURL: git@github.com:akamai-consulting/tiktok-obs-platform.git
+repoURL: git@github.com:sachiachar/argo-cluster.git
 namespace: default
 argocdNamespace: argocd
 projectName: default
