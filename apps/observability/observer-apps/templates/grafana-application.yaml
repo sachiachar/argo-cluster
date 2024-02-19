@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana
+  namespace: {{ .Values.argocd.namespace }}
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.argocd.project }}
+  destination:
+    namespace: monitoring
+    server: {{ .Values.destination.server }}
+  source:
+    repoURL: {{ .Values.platform.repository }}
+    path: apps/observability/grafana
+    targetRevision: HEAD
+    helm:
+      releaseName: grafana
+      values: |
+        grafana:
+          hostname: grafana.{{ .Values.platform.toolsHostnameSuffix }}
+        thanosDatasource:
+          url: http://thanos-root-observer-query-frontend:9090
+        lokiDatasource:
+          url: http://loki:3100
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: external-dns
+  labels: 
+    app.kubernetes.io/name: external-dns
+    helm.sh/chart: external-dns-6.11.2
+    app.kubernetes.io/instance: external-dns
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: external-dns
+      app.kubernetes.io/instance: external-dns
+  endpoints:
+  - port: http
+    path: /metrics
+    scrapeTimeout: 10s

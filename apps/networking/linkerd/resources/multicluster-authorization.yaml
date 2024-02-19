@@ -1,0 +1,15 @@
+apiVersion: policy.linkerd.io/v1beta1
+kind: ServerAuthorization
+metadata:
+  namespace: linkerd-multicluster
+  name: service-mirror-buoyant-cloud
+  labels:
+    app.kubernetes.io/part-of: buoyant-cloud
+spec:
+  server:
+    name: service-mirror
+  client:
+    meshTLS:
+      serviceAccounts:
+      - name: buoyant-cloud-agent
+        namespace: buoyant-cloud

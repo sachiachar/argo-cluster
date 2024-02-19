@@ -1,0 +1,112 @@
+root-observer:
+  image:
+    tag: "0.30.2"
+  query:
+    podAnnotations:
+      linkerd.io/inject: enabled 
+    replicaLabel: prometheus_replica
+    stores:
+      - thanos-remote-aggregator-query-grpc.monitoring.svc.cluster.local:10901
+      - thanos-ruler-operated.monitoring.svc.cluster.local:10901
+    extraFlags:
+      - --query.auto-downsampling
+      - --store.response-timeout=11000ms
+  storegateway:
+    enabled: true
+    podAnnotations:
+      linkerd.io/inject: enabled 
+    resources:
+      limits:
+        memory: 4Gi
+      requests:
+        cpu: 1000m
+        memory: 4Gi
+    extraFlags:
+      - |
+        --request.logging-config=
+          options: # This options is applied for both grpc/http.
+            level: INFO
+            decision:
+              log_start: true
+              log_end: true
+          grpc:
+            config:
+              - service: thanos.Store
+                method: Info
+        
+  queryFrontend:
+    podAnnotations:
+      linkerd.io/inject: enabled 
+    config:
+      type: IN-MEMORY
+      config:
+        max_size: "2GB"
+        max_size_items: 0
+        validity: 0
+    extraFlags:
+      - --query-range.split-interval=4h
+      - --query-frontend.log-queries-longer-than=10s
+      - --labels.split-interval=3h
+      - --labels.max-retries-per-request=1
+      - |-
+        --labels.response-cache-config="config":
+          max_size: "2GB"
+          max_size_items: 0
+          validity: 0
+        type: IN-MEMORY
+      - | 
+        --query-frontend.downstream-tripper-config=
+          max_idle_conns_per_host: 500
+          idle_conn_timeout: "5m"
+    resources:
+      limits:
+        memory: 2Gi
+      requests:
+        cpu: 1000m
+        memory: 2Gi
+  compactor:
+    enabled: true
+    retentionResolutionRaw: 7d
+    retentionResolution5m: 30d
+    retentionResolution1h: 10y
+    podAnnotations:
+      linkerd.io/inject: enabled
+    persistence:
+      size: 100Gi
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+    prometheusRule:
+      enabled: true
+  existingObjstoreSecret: metrics-bucket
+  existingObjstoreSecretItems:
+    - key: objstore.yaml
+      path: objstore.yml
+
+remote-aggregator:
+  query:
+    podAnnotations:
+      linkerd.io/inject: enabled 
+    dnsDiscovery:
+      enabled: false
+    stores:
+      - us-ea.prd.tns-rpc.platform.sasriya.net:443
+      - us-we.prd.tns-rpc.platform.sasriya.net:443
+      - eu-we.prd.tns-rpc.platform.sasriya.net:443
+      - ap-se.prd.tns-rpc.platform.sasriya.net:443
+      - us-ea.stg.tns-rpc.platform.sasriya.net:443
+      - eu-we.stg.tns-rpc.platform.sasriya.net:443
+      - root.tns-rpc.platform.sasriya.net:443
+    extraFlags:
+      - --grpc-client-tls-secure
+      - --query.max-concurrent-select=12
+      - --query.max-concurrent=40
+      - --store.response-timeout=10000ms
+    resources:
+      limits:
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 1Gi
+  

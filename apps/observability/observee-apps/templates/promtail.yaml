@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: promtail-{{ .Values.destination.name }}
+  namespace: {{ .Values.argocd.namespace }}
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.argocd.project }}
+  destination:
+    namespace: monitoring
+    server: {{ .Values.destination.server }}
+  source:
+    repoURL: 'https://grafana.github.io/helm-charts'
+    chart: promtail
+    targetRevision: 6.7.0
+    helm:
+      releaseName: promtail
+      values: |
+        podAnnotations:
+          linkerd.io/inject: enabled
+        loki:
+          serviceName: loki
+        config:
+          clients:
+            - url: {{ .Values.promtail.pushUrl}}
+        extraArgs:
+          - -client.external-labels=cluster_name={{ .Values.destination.name }}
+        serviceMonitor:
+          enabled: true
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

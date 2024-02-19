@@ -1,0 +1,4 @@
+link:
+  kubeconfig: ''
+  gatewayAddress: '1.2.3.4'
+  clusterName: 'cluster-name'

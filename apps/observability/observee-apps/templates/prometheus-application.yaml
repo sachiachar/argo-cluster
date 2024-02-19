@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus-{{ .Values.destination.name }}
+  namespace: {{ .Values.argocd.namespace }}
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.argocd.project }}
+  destination:
+    namespace: monitoring
+    server: {{ .Values.destination.server }}
+  source:
+    repoURL: {{ .Values.platform.repository }}
+    path: apps/observability/prometheus
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true # To solve long annotation problem
+      - CreateNamespace=true

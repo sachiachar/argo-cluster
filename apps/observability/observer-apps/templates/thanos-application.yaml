@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: thanos-observer
+  namespace: {{ .Values.argocd.namespace }}
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.argocd.project }}
+  destination:
+    namespace: monitoring
+    server: {{ .Values.destination.server }}
+  source:
+    repoURL: {{ .Values.platform.repository }}
+    path: apps/observability/thanos-observer
+    targetRevision: HEAD
+    helm:
+      releaseName: thanos
+      values: |
+        root-observer:
+          query:
+            ingress:
+              hostname: observer.thanos.{{ .Values.platform.toolsHostnameSuffix }}
+              grpc:
+                hostname: observer.thanos-grpc.{{ .Values.platform.toolsHostnameSuffix }}
+          receive:
+            enabled: true
+            replicaCount: 3
+            podAnnotations:
+              linkerd.io/inject: enabled 
+              
+            replicaLabel: thanos_receiver_replica
+            ingress:
+              enabled: true
+              hosts:
+                - receiver.thanos-remote.{{ .Values.platform.toolsHostnameSuffix }}
+              tls:
+                - hosts:
+                  - receiver.thanos-remote.{{ .Values.platform.toolsHostnameSuffix }}
+                  secretName: thanos-receiver-tls-secret
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

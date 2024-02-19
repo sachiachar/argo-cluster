@@ -1,0 +1,33 @@
+thanos:
+  query:
+    podAnnotations:
+      linkerd.io/inject: enabled 
+    dnsDiscovery:
+      sidecarsService: prometheus-operated
+      sidecarsNamespace: monitoring
+    replicaLabel: prometheus_replica
+    extraFlags:
+      - --query.promql-engine=thanos
+    ingress:
+      enabled: false
+      grpc:
+        enabled: true
+        tls: true
+        hostname: cluster-xyz.thanos-grpc.sasriya.net
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt
+          nginx.ingress.kubernetes.io/ssl-redirect: "true"
+          nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+          nginx.ingress.kubernetes.io/grpc-backend: "true"
+          nginx.ingress.kubernetes.io/protocol: "h2c"
+          nginx.ingress.kubernetes.io/proxy-read-timeout: "160"
+        
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+    prometheusRule:
+      enabled: true
+
+      
+        

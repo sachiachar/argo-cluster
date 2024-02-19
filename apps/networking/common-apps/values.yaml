@@ -1,0 +1,23 @@
+
+
+argocd:  
+  namespace: argocd
+  project: default
+  server: https://kubernetes.default.svc
+destination:
+  namespace: default
+  project: default
+  server: https://kubernetes.default.svc
+  name: in-cluster
+platform:
+  repository: git@github.com:akamai-consulting/tiktok-obs-platform.git
+  toolsHostnameSuffix: obs.platform.sasriya.net
+  toolsHostnamePrefix: env.dev
+link:
+  toControl:
+    enabled: false
+    kubeconfig: ''
+    gatewayAddress: 'root.meshgw.obs.platform.sasriya.net'
+    clusterName: 'root-cluster'
+
+# "toControl" section kubeconfig needs to be updated.

@@ -1,0 +1,20 @@
+argocd:  
+  namespace: argocd
+  project: default
+  server: https://kubernetes.default.svc
+destination:
+  namespace: default
+  project: default
+  server: https://kubernetes.default.svc
+  name: in-cluster
+platform:
+  repository: git@github.com:akamai-consulting/tiktok-obs-platform.git
+  toolsHostnameSuffix: platform.sasriya.net
+  toolsHostnamePrefix: env.dev
+prometheus:
+  additionalScrapeConfigs: []
+  externalLabels: {}
+promtail:
+  pushUrl: http://loki.monitoring:3100/loki/api/v1/push
+thanosRuler: 
+  enabled: false

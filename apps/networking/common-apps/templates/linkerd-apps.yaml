@@ -1,0 +1,40 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: linkerd-apps-{{ .Values.destination.name }}
+  namespace: {{ .Values.argocd.namespace }}
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.argocd.project }}
+  destination:
+    namespace: {{ .Values.argocd.namespace }} 
+    server: {{ .Values.argocd.server }}
+  source:
+    path: apps/networking/linkerd/apps
+    repoURL: {{ .Values.platform.repository }}
+    targetRevision: HEAD
+    helm:
+      values: |
+        argocd:
+          server: {{ .Values.argocd.server }}
+        destination:
+          server: {{ .Values.destination.server }}
+          name: {{ .Values.destination.name }}
+        platform:
+          repository: {{ .Values.platform.repository }}
+          toolsHostnameSuffix: {{ .Values.platform.toolsHostnameSuffix }}  
+          toolsHostnamePrefix: {{ .Values.platform.toolsHostnamePrefix }}
+        link:
+          toControl:
+            enabled: {{ .Values.link.toControl.enabled }}
+            kubeconfig: {{ .Values.link.toControl.kubeconfig }}
+            gatewayAddress: {{ .Values.link.toControl.gatewayAddress }}
+            clusterName: {{ .Values.link.toControl.clusterName }}
+          
+  syncPolicy:
+    automated: 
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,10 @@
+apiVersion: v2
+version: 1.0.0
+appVersion: 1.0.0
+type: application
+description: A Helm chart for configuration of linkerd-viz.
+name: "linkerd-viz"
+dependencies:
+  - name: linkerd-viz
+    version: "30.3.5"
+    repository: https://helm.linkerd.io/stable

@@ -1,0 +1,49 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki
+  namespace: {{ .Values.argocd.namespace }}
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.argocd.project }}
+  destination:
+    namespace: monitoring
+    server: {{ .Values.destination.server }}
+  source:
+    path: apps/observability/loki-observer
+    repoURL: {{ .Values.platform.repository }}
+    targetRevision: HEAD
+    helm:
+      releaseName: grafana
+      values: |
+          loki:
+            ingress:
+              hosts:
+                - loki.{{ .Values.platform.toolsHostnameSuffix }}
+              tls:
+                - hosts:
+                  - loki.{{ .Values.platform.toolsHostnameSuffix }}
+                  secretName: argocd-secret
+          
+#    plugin:
+#      name: kustomized-helm
+#      env:
+#        - name: HELM_VALUES
+#          value: |
+#            loki:
+#              ingress:
+#                hosts:
+#                  - loki.{{ .Values.platform.toolsHostnameSuffix }}
+#                tls:
+#                  - hosts:
+#                    - loki.{{ .Values.platform.toolsHostnameSuffix }}
+#                    secretName: argocd-secret
+#       - name: KUSTOMIZE_DIR
+#          value: base
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

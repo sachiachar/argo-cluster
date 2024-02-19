@@ -1,0 +1,15 @@
+apiVersion: v2
+version: 1.0.0
+appVersion: 1.0.0
+type: application
+description: A Helm chart for configuration of Thanos on observer cluster.
+name: "thanos-observer"
+dependencies:
+  - name: thanos
+    version: "12.3.2"
+    repository: https://charts.bitnami.com/bitnami
+    alias: root-observer
+  - name: thanos
+    version: "12.3.2"
+    repository: https://charts.bitnami.com/bitnami
+    alias: remote-aggregator

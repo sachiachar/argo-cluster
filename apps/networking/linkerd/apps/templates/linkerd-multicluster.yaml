@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: linkerd-multicluster-{{ .Values.destination.name }}
+  namespace: {{ .Values.argocd.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.argocd.project }}
+  source:
+    chart: linkerd-multicluster
+    repoURL: https://helm.linkerd.io/stable
+    targetRevision: 30.2.5
+    helm:
+      values: |
+        gateway:
+          serviceAnnotations:
+            external-dns.alpha.kubernetes.io/hostname: {{ .Values.platform.toolsHostnamePrefix }}.meshgw.{{ .Values.platform.toolsHostnameSuffix }}
+  destination:
+    namespace: {{ .Values.destination.namespace }}-multicluster
+    server: {{ .Values.destination.server }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

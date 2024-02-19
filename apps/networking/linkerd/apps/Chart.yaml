@@ -1,0 +1,6 @@
+apiVersion: v2
+version: 1.0.0
+appVersion: 1.0.0
+type: application
+description: A Helm chart for configuration of linkerd, using an "app of apps" structure.
+name: "linkerd-root"

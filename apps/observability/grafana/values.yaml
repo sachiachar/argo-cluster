@@ -7,9 +7,9 @@ grafana-operator:
   grafana: 
     enabled: false
 grafana:
-  hostname: grafana.platform.example.com
+  hostname: grafana.platform.sasriya.net
   adminPassword: JZDQFRWFJktu
 thanosDatasource:
-  url: http://thanos.platform.example.com
+  url: http://thanos.platform.sasriya.net
 lokiDatasource:
-  url: http://loki.platform.example.com
+  url: http://loki.platform.sasriya.net

@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: external-dns-prometheus-rules
+spec:
+  groups:
+  - name: external-dns
+    rules:
+    - alert: ExternalDnsErrors
+      expr: increase(external_dns_registry_errors_total[2m]) > 0
+      for: 15m
+      labels:
+        severity: high
+      annotations:
+        summary: Errors managing external DNS entries
+        description: >-
+          {{`{{ $value }}`}} errors have occured over the previous 2 minutes while managing DNS entries from external-dns.

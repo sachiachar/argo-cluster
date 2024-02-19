@@ -1,0 +1,45 @@
+loki:
+  monitoring:
+    selfMonitoring:
+      enabled: false
+      grafanaAgent:
+        installOperator: false
+    lokiCanary:
+      annotations:
+        linkerd.io/inject: enabled
+  test:
+    enabled: false
+  loki:
+    commonConfig:
+      replication_factor: 1
+    storage:
+      type: 'filesystem'
+    auth_enabled: false
+    compactor: 
+      compaction_interval: 10m
+      retention_enabled: true
+      retention_delete_delay: 2h
+      retention_delete_worker_count: 150
+    limits_config:
+      retention_period: 15d
+      ingestion_rate_mb: 16
+  singleBinary:
+    replicas: 1
+    persistence:
+      storageClassName: 'linode-block-storage-retain'
+      size: 1000Gi
+      enableStatefulSetAutoDeletePVC: false
+    podAnnotations:
+      linkerd.io/inject: enabled
+      config.linkerd.io/default-inbound-policy: all-authenticated
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "500m"
+      limits:
+        memory: "4Gi"
+
+  gateway:
+    enabled: false
+  ingress:
+    enabled: false

@@ -1,0 +1,19 @@
+argocd:  
+  namespace: argocd
+  project: default
+  server: https://kubernetes.default.svc
+destination:
+  namespace: linkerd
+  project: default
+  server: https://kubernetes.default.svc
+  name: in-cluster
+platform:
+  repository: git@github.com:akamai-consulting/tiktok-obs-platform.git
+  toolsHostnameSuffix: obs.platform.sasriya.net
+  toolsHostnamePrefix: env.dev
+link:
+  toControl:
+    enabled: false
+    kubeconfig: ''
+    gatewayAddress: '1.2.3.4'
+    clusterName: 'cluster-name'

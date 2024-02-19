@@ -1,0 +1,24 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: external-dns-prometheus-rules
+spec:
+  groups:
+  - name: haproxy
+    rules:
+    - alert: HaproxyBackendDown
+      expr: haproxy_backend_status{state="DOWN"} > 0
+      labels:
+        severity: critical
+      annotations:
+        summary: Haproxy backend down
+        description: >-
+          HA Proxy {{`{{ $labels.instance }}`}} backend is down for proxy {{`{{ $labels.proxy }}`}}
+    - alert: HaproxyBackendNoActiveServers
+      expr: haproxy_backend_active_servers{proxy!="health"} == bool 0 > 0
+      labels:
+        severity: critical
+      annotations:
+        summary: Haproxy backend has no active servers
+        description: >-
+          HA Proxy {{`{{ $labels.instance }}`}} backend has no active servers for proxy {{`{{ $labels.proxy }}`}}

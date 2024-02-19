@@ -1,0 +1,5 @@
+- op: add
+  path: "/spec/podMetadata"
+  value:
+    annotations:
+      linkerd.io/inject: enabled

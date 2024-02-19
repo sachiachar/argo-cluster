@@ -1,0 +1,30 @@
+{{ if .Values.link.toControl.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: linkerd-link-{{ .Values.destination.name }}-control
+  namespace: {{ .Values.argocd.namespace }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.argocd.project }}
+  source:
+    path: apps/networking/linkerd/charts/multicluster-link
+    repoURL: {{ .Values.platform.repository }}
+    helm:
+      values: |
+        link:
+          kubeconfig: {{ .Values.link.toControl.kubeconfig }}
+          gatewayAddress: {{ .Values.link.toControl.gatewayAddress }}
+          clusterName: {{ .Values.link.toControl.clusterName }}
+
+  destination:
+    namespace: {{ .Values.destination.namespace }}
+    server: {{ .Values.destination.server }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+{{ end }}

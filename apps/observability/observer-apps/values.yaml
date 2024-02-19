@@ -1,0 +1,11 @@
+argocd:  
+  namespace: argocd
+  project: default
+  server: https://kubernetes.default.svc
+destination:
+  namespace: default
+  project: default
+  server: https://kubernetes.default.svc
+platform:
+  repository: git@github.com:akamai-consulting/tiktok-obs-platform.git
+  toolsHostnameSuffix: platform.sasriya.net

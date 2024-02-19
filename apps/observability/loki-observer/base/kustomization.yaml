@@ -1,0 +1,15 @@
+resources:
+  - all.yaml
+
+patchesJson6902:
+- target:
+    version: v1
+    kind: Service
+    name: loki
+  path: loki-service-patch.yaml
+- target:
+    version: v1alpha1
+    group: monitoring.grafana.com
+    kind: GrafanaAgent
+    name: loki
+  path: grafana-agent-patch.yaml

@@ -1,0 +1,3 @@
+- op: add
+  path: "/metadata/labels/mirror.linkerd.io~1exported"
+  value: "true"

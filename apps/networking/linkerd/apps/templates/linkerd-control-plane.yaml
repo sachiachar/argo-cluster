@@ -1,0 +1,75 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: linkerd-control-plane-{{ .Values.destination.name }}
+  namespace: {{ .Values.argocd.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.argocd.project }}
+  source:
+    chart: linkerd-control-plane
+    repoURL: https://helm.linkerd.io/stable
+    targetRevision: 1.9.5
+    helm:
+      parameters:
+      - name: identityTrustAnchorsPEM
+        value: |
+          -----BEGIN CERTIFICATE-----
+          MIIBjzCCATWgAwIBAgIQUbBh9HOrxu5R7uQlXlv+kzAKBggqhkjOPQQDAjAlMSMw
+          IQYDVQQDExpyb290LmxpbmtlcmQuY2x1c3Rlci5sb2NhbDAgFw0yMzAxMTAxNzQz
+          MTNaGA8yMDcyMTIyODE3NDMxM1owJTEjMCEGA1UEAxMacm9vdC5saW5rZXJkLmNs
+          dXN0ZXIubG9jYWwwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARh7euNpQ052ajz
+          dWKcF/DEC/Jc2TPxrxzDwMb2CZhw81M2vZFl5jU6IPBavMNus5dPd6ZeAy3CyYkz
+          PgKFk7Ico0UwQzAOBgNVHQ8BAf8EBAMCAQYwEgYDVR0TAQH/BAgwBgEB/wIBATAd
+          BgNVHQ4EFgQUbqW1fGZ1Bwqfys+4FhcqGTPAvd4wCgYIKoZIzj0EAwIDSAAwRQIh
+          AI/+ecdjvyEaMTpcEept5E+Qr2JWjn/+ytq8U/rur8xuAiAO8snBcD1d3ok3mg94
+          Ews4xng3s1/0uiSPugMJJvxgXA==
+          -----END CERTIFICATE-----
+      - name: identity.issuer.scheme
+        value: kubernetes.io/tls
+  destination:
+    namespace: {{ .Values.destination.namespace }}
+    server: {{ .Values.destination.server }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+  ignoreDifferences:
+  - group: ""
+    kind: Secret
+    name:  linkerd-proxy-injector-k8s-tls
+    jsonPointers:
+    - /data/tls.crt
+    - /data/tls.key
+  - group: ""
+    kind: Secret
+    name:  linkerd-sp-validator-k8s-tls
+    jsonPointers:
+    - /data/tls.crt
+    - /data/tls.key
+  - group: ""
+    kind: Secret
+    name:  linkerd-policy-validator-k8s-tls
+    jsonPointers:
+    - /data/tls.crt
+    - /data/tls.key
+  - group: admissionregistration.k8s.io
+    kind: MutatingWebhookConfiguration
+    name:  linkerd-proxy-injector-webhook-config
+    jsonPointers:
+    - /webhooks/0/clientConfig/caBundle
+  - group: admissionregistration.k8s.io
+    kind: ValidatingWebhookConfiguration
+    name:  linkerd-sp-validator-webhook-config
+    jsonPointers:
+    - /webhooks/0/clientConfig/caBundle
+  - group: admissionregistration.k8s.io
+    kind: ValidatingWebhookConfiguration
+    name:  linkerd-policy-validator-webhook-config
+    jsonPointers:
+    - /webhooks/0/clientConfig/caBundle

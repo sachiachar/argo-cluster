@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: thanos-{{ .Values.destination.name }}
+  namespace: {{ .Values.argocd.namespace }}
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.argocd.project }}
+  destination:
+    namespace: monitoring
+    server: {{ .Values.destination.server }}
+  source:
+    repoURL: {{ .Values.platform.repository }}
+    path: apps/observability/thanos-observee
+    targetRevision: HEAD
+    helm:
+      releaseName: thanos
+      values: |
+        thanos:
+          query:
+            ingress:
+              grpc:
+                hostname: {{ .Values.platform.toolsHostnamePrefix }}.tns-rpc.{{ .Values.platform.toolsHostnameSuffix }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

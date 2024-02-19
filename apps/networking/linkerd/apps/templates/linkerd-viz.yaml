@@ -1,0 +1,58 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: linkerd-viz-{{ .Values.destination.name }}
+  namespace: {{ .Values.argocd.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.argocd.project }}
+  source:
+    repoURL: {{ .Values.platform.repository }}
+    path: apps/networking/linkerd/linkerd-viz
+    targetRevision: HEAD
+    helm:
+  destination:
+    namespace: {{ .Values.destination.namespace }}-viz
+    server: {{ .Values.destination.server }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+  ignoreDifferences:
+    - group: ""
+      kind: Secret
+      name:  tap-injector-k8s-tls
+      jsonPointers:
+        - /data/tls.crt
+        - /data/tls.key
+    - group: ""
+      kind: Secret
+      name:  tap-k8s-tls
+      jsonPointers:
+        - /data/tls.crt
+        - /data/tls.key
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+      name: linkerd-tap-injector-webhook-config
+      jsonPointers:
+        - /webhooks/0/clientConfig/caBundle
+    - group: apiregistration.k8s.io
+      kind: APIService
+      name: v1alpha1.tap.linkerd.io
+      jsonPointers:
+        - /spec/caBundle
+    - group: apps
+      kind: Deployment
+      name: tap-injector
+      jsonPointers:
+        - /spec/template/metadata/annotations/checksum~1config
+    - group: apps
+      kind: Deployment
+      name: tap
+      jsonPointers:
+        - /spec/template/metadata/annotations/checksum~1config
