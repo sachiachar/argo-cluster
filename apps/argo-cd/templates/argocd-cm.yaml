@@ -1,0 +1,20 @@
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: argocd-cm
+#   namespace: argocd
+# data:
+#   admin.enabled: 'true'
+#   application.instanceLabelKey: argocd.argoproj.io/instance
+#   exec.enabled: 'true'
+#   server.rbac.log.enforce.enable: 'false'
+#   timeout.hard.reconciliation: '0'
+#   timeout.reconciliation: 180s
+#   configManagementPlugins: |
+#     - name: kustomized-helm
+#       init:
+#         command: ["/bin/sh", "-c"]
+#         args: ["helm dependency build"]
+#       generate:
+#         command: [sh, -c]
+#         args: ["echo \"$ARGOCD_ENV_HELM_VALUES\" | helm template . --name-template $ARGOCD_APP_NAME --namespace $ARGOCD_APP_NAMESPACE $ARGOCD_ENV_HELM_ARGS -f - --include-crds > base/all.yaml && kustomize build \"$ARGOCD_ENV_KUSTOMIZE_DIR\""]
