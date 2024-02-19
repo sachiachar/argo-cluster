@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: external-dns
+  namespace: {{ .Values.argocdNamespace }}
+spec:
+  generators:
+  - clusters: {} 
+  template:
+    metadata:
+      name: '{{`{{name}}-external-dns`}}'
+      namespace: {{ .Values.argocdNamespace }}
+      finalizers:
+      - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: {{ .Values.projectName }}
+      destination:
+        namespace: external-dns
+        server: '{{`{{server}}`}}'
+
+      source:
+        path: apps/external-dns
+        repoURL: {{ .Values.repoURL }}
+        targetRevision: HEAD
+        helm:
+          values: |
+            externalDns:
+              txtOwnerId: {{`{{name}}`}}'
+              domainFilter: {{ .Values.externalDns.domainFilter }}
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

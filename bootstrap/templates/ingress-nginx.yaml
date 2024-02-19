@@ -25,7 +25,8 @@ spec:
           values: |
             controller:
               autoscaling:
-                enabled: true
+                apiVersion: autoscaling/v2
+                enabled: false
                 minReplicas: 3
                 maxReplicas: 5
                 targetCPUUtilizationPercentage: 50

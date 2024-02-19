@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: networking-workload-clusters
+  namespace: {{ .Values.argocdNamespace }}
+spec:
+  generators:
+    - clusters: 
+        selector:
+          matchLabels:
+            clusterset: general
+  template:
+    metadata:
+      name: networking-common-{{`{{name}}`}}
+      namespace: {{ .Values.argocdNamespace }}
+      finalizers:
+      - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: {{ .Values.projectName }}
+      destination:
+        namespace: {{ .Values.argocdNamespace }} 
+        server: {{ .Values.spec.destination.server }}
+      source:
+        path: apps/networking/common-apps
+        repoURL: {{ .Values.repoURL }}
+        targetRevision: HEAD
+        helm:
+          values: |
+            argocd:
+              server: {{ .Values.spec.destination.server }}
+            destination:
+              server: '{{`{{server}}`}}'
+              name: '{{`{{name}}`}}'
+            platform:
+              repository: {{ .Values.repoURL }}
+              toolsHostnameSuffix: {{ .Values.platformToolsBaseHostname }}  
+              toolsHostnamePrefix: {{`{{ metadata.labels.location }}`}}.{{`{{ metadata.labels.environment }}`}}
+            link:
+              toControl:
+                enabled: true
+      syncPolicy:
+        automated: 
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

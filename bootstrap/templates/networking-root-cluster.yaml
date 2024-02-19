@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: networking-root-cluster
+  namespace: {{ .Values.argocdNamespace }}
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.projectName }}
+  destination:
+    namespace: {{ .Values.argocdNamespace }} 
+    server: {{ .Values.spec.destination.server }}
+  source:
+    path: apps/networking/common-apps
+    repoURL: {{ .Values.repoURL }}
+    targetRevision: HEAD
+    helm:
+      values: |
+        argocd:
+          server: {{ .Values.spec.destination.server }}
+        destination:
+          server: {{ .Values.spec.destination.server }}
+          name: 'root-cluster'
+        platform:
+          repository: {{ .Values.repoURL }}
+          toolsHostnameSuffix: {{ .Values.platformToolsBaseHostname }}  
+          toolsHostnamePrefix: root
+  syncPolicy:
+    automated: 
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

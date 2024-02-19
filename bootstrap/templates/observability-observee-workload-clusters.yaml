@@ -1,0 +1,50 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: observee-apps
+  namespace: {{ .Values.argocdNamespace }}
+spec:
+  generators:
+    - clusters:
+        selector:
+          matchLabels:
+            clusterset: general
+  template:
+    metadata:
+      name: observee-{{`{{name}}`}}
+      namespace: {{ .Values.argocdNamespace }}
+      finalizers:
+      - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: {{ .Values.projectName }}
+      destination:
+        namespace: argocd
+        server: {{ .Values.spec.destination.server }}
+      source:
+        path: apps/observability/observee-apps
+        repoURL: {{ .Values.repoURL }}
+        targetRevision: HEAD
+        helm:
+          values: |
+            argocd:
+              server: {{ .Values.spec.destination.server }}
+            destination:
+              server: '{{`{{server}}`}}'
+              name: '{{`{{name}}`}}'
+            platform:
+              repository: {{ .Values.repoURL }}
+              toolsHostnameSuffix: {{ .Values.platformToolsBaseHostname }}  
+              toolsHostnamePrefix: {{`{{ metadata.labels.location }}`}}.{{`{{ metadata.labels.environment }}`}}
+            prometheus:
+              externalLabels:
+                location: {{`{{ metadata.labels.location }}`}}
+                environment: {{`{{ metadata.labels.environment }}`}}
+                cluster: {{`{{ metadata.labels.environment }}`}}-{{`{{ metadata.labels.location }}`}}
+            promtail:
+              pushUrl: http://loki-root-cluster.monitoring:3100/loki/api/v1/push
+      syncPolicy:
+        automated: 
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

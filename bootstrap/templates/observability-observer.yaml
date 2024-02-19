@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: observer-apps
+  namespace: {{ .Values.argocdNamespace }}
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.projectName }}
+  destination:
+    namespace: monitoring
+    server: {{ .Values.spec.destination.server }}
+  source:
+    path: apps/observability/observer-apps
+    repoURL: {{ .Values.repoURL }}
+    targetRevision: HEAD
+    helm:
+      values: |
+        argocd:
+          server: {{ .Values.spec.destination.server }}
+        destination:
+          server: {{ .Values.spec.destination.server }}
+        platform:
+          repository: {{ .Values.repoURL }}
+          toolsHostnameSuffix: {{ .Values.platformToolsBaseHostname }}  
+  syncPolicy:
+    automated: 
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

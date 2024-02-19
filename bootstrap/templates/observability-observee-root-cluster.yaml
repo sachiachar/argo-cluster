@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: observee-root-cluster
+  namespace: {{ .Values.argocdNamespace }}
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.projectName }}
+  destination:
+    namespace: argocd
+    server: {{ .Values.spec.destination.server }}
+  source:
+    path: apps/observability/observee-apps
+    repoURL: {{ .Values.repoURL }}
+    targetRevision: HEAD
+    helm:
+      values: |
+        argocd:
+          server: {{ .Values.spec.destination.server }}
+        destination:
+          server: {{ .Values.spec.destination.server }}
+          name: 'root-cluster'
+        platform:
+          repository: {{ .Values.repoURL }}
+          toolsHostnameSuffix: {{ .Values.platformToolsBaseHostname }}  
+          toolsHostnamePrefix: root
+        prometheus:
+          externalLabels:
+            location: "control-cluster"
+            environment: "control-cluster"
+            cluster: "control-cluster"
+          additionalScrapeConfigs:
+        promtail:
+          pushUrl: http://loki.monitoring:3100/loki/api/v1/push
+        thanosRuler:
+          enabled: true
+  syncPolicy:
+    automated: 
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
